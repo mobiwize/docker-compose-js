@@ -1,0 +1,42 @@
+{
+  "name": "docker-compose-js",
+  "version": "0.0.1",
+  "description": "",
+  "types": "dist/index.d.ts",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "npm run clean && npm run buildTsc",
+    "buildWatch": "npm run clean && npm run buildTscWatch",
+    "clean": "./node_modules/.bin/rimraf ./dist",
+    "buildTsc": "./node_modules/.bin/tsc",
+    "buildTscWatch": "./node_modules/.bin/tsc -w",
+    "test": "npm run setTestEnvironment && npm run testMocha",
+    "testWatch": "npm run setTestEnvironment && npm run testMochaWatch",
+    "testMocha": "./node_modules/.bin/mocha -c -b dist/**/*.test.js",
+    "testMochaWatch": "./node_modules/.bin/mocha -c -b -w dist/**/*.test.js",
+    "setTestEnvironment": "cross-env RUNTIME_ENVIRONMENT=test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mobiwize/docker-compose-js.git"
+  },
+  "keywords": [
+    "docker",
+    "compose",
+    "docker-compose"
+  ],
+  "author": "MobiWize",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mobiwize/docker-compose-js/issues"
+  },
+  "homepage": "https://github.com/mobiwize/docker-compose-js#readme",
+  "devDependencies": {
+    "@types/chai": "^4.0.4",
+    "@types/mocha": "^2.2.42",
+    "chai": "^4.1.1",
+    "mocha": "^3.5.0",
+    "rimraf": "^2.6.1",
+    "typescript": "^2.4.2"
+  }
+}
