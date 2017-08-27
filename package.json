@@ -1,10 +1,11 @@
 {
   "name": "docker-compose-js",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "types": "dist/index.d.ts",
   "main": "dist/index.js",
   "scripts": {
+    "prepublish": "npm run build",
     "build": "npm run clean && npm run buildTsc",
     "buildWatch": "npm run clean && npm run buildTscWatch",
     "clean": "./node_modules/.bin/rimraf ./dist",
