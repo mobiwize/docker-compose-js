@@ -1,4 +1,6 @@
+testResources/
 src/
 .gitignore
 .npmignore
 tsconfig.json
+**/*.test.*

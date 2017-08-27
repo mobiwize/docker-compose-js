@@ -1,0 +1,6 @@
+version: "2"
+
+services:
+  testing_service:
+    build: "./"
+    image: "$IMAGE_NAME:$IMAGE_TAG"
