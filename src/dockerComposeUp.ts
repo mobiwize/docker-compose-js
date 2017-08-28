@@ -5,7 +5,6 @@ export interface DockerComposeUpConfig {
   cwd?: string;
   servicesToStart?: string[];
   build?: boolean;
-  projectName?: string;
   composeFiles: string[];
   environmentVariables?: { [key: string]: string };
 }
@@ -16,12 +15,11 @@ export function dockerComposeUp(config: DockerComposeUpConfig): Promise<CommandR
     cwd: config.cwd
   };
     
-  const projectName = config.projectName ? `-p ${config.projectName}` : '';
   const composeFiles: string = config.composeFiles.map(file => `-f ${file}`).join(' ');
   const build = config.build ? '--build' : '';
   const servicesToStart = (config.servicesToStart || []).join(' ');
   
-  const command = `docker-compose ${projectName} ${composeFiles} up -d ${build} ${servicesToStart}`;
+  const command = `docker-compose ${composeFiles} up -d ${build} ${servicesToStart}`;
 
   return executeCommand(command, options);
 }

@@ -1,4 +1,4 @@
-version: "2"
+version: "2.1"
 
 services:
   testing_service:
@@ -7,3 +7,24 @@ services:
     ports:
       - "1234"
 
+  testing_service_healthy:
+    build: "./"
+    image: "${IMAGE_NAME}_healty:$IMAGE_TAG"
+    ports:
+      - "1234"
+    healthcheck:
+      test: ["CMD", "healthy-healthcheck.sh"]
+      interval: 2s
+      timeout: 2s
+      retries: 3
+
+  testing_service_unhealthy:
+    build: "./"
+    image: "${IMAGE_NAME}_unhealty:$IMAGE_TAG"
+    ports:
+      - "1234"
+    healthcheck:
+      test: ["CMD", "unhealthy-healthcheck.sh"]
+      interval: 2s
+      timeout: 2s
+      retries: 3
