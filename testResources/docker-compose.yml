@@ -4,3 +4,6 @@ services:
   testing_service:
     build: "./"
     image: "$IMAGE_NAME:$IMAGE_TAG"
+    ports:
+      - "1234"
+

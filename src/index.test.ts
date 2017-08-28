@@ -1,6 +1,6 @@
 import {
-  dockerComposeDown, dockerComposeUp, dockerComposePS,
-  DockerComposeDownConfig, DockerComposeUpConfig, DockerComposePSConfig,
+  dockerComposeDown, dockerComposeUp, dockerComposePS, getServiceAddress,
+  DockerComposeDownConfig, DockerComposeUpConfig, DockerComposePSConfig, GetServiceAddressConfig,
   CommandResult
 } from './index';
 import { expect } from 'chai';
@@ -14,6 +14,7 @@ describe('docker-compose-js', () => {
   let upConfig: DockerComposeUpConfig;
   let psConfig: DockerComposePSConfig;
   let downConfig: DockerComposeDownConfig;
+  let getServiceAddressConfig: GetServiceAddressConfig;
 
   before(() => {
     const composeFiles = [path.join('testResources', 'docker-compose.yml')];
@@ -22,12 +23,14 @@ describe('docker-compose-js', () => {
       IMAGE_NAME: "testing_docker_compose_up",
       IMAGE_TAG: "testing"
     };
+    const testingServiceName = 'testing_service';
 
     upConfig = {
       cwd,
       composeFiles,
       build: true,
-      environmentVariables
+      environmentVariables,
+      servicesToStart: [testingServiceName]
     }
     psConfig = {
       cwd,
@@ -38,6 +41,13 @@ describe('docker-compose-js', () => {
       cwd,
       composeFiles,
       environmentVariables
+    }
+    getServiceAddressConfig = {
+      composeFiles,
+      cwd,
+      environmentVariables,
+      serviceName: testingServiceName,
+      originalPort: 1234
     }
   })
 
@@ -71,6 +81,15 @@ describe('docker-compose-js', () => {
       const serticeStatus = stdout.substr(serviceStatusIndex, endServiceStatus - serviceStatusIndex);
 
       expect(serticeStatus).to.contain('sleep infinity   Up');
+    })
+
+    it('should expose port', async function(){
+      this.timeout(0);
+
+      const result: string = await getServiceAddress(getServiceAddressConfig);
+
+      const expectedFormat: RegExp = /^\d+\.\d+\.\d+\.\d+\:\d+$/;
+      expect(expectedFormat.test(result), `expected '${result}' to be of format ${expectedFormat}`).to.be.true;
     })
 
     describe('dockerComposeDown', () => {
