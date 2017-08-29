@@ -3,6 +3,7 @@ import {
   DockerComposeDownConfig, DockerComposeUpConfig, DockerComposePSConfig, GetServiceAddressConfig, GetServiceIdConfig,
   CommandResult
 } from './index';
+import { executeCommand } from './executeCommand';
 import { expect } from 'chai';
 import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
@@ -18,6 +19,7 @@ describe('docker-compose-js', () => {
     IMAGE_TAG: "testing"
   };
   const testingServiceName = 'testing_service';
+  const projectName = 'dockerComposeJSProjectNameOverride'.toLowerCase();
 
   describe('dockerComposeUp', () => {
     let upConfig: DockerComposeUpConfig;
@@ -32,30 +34,35 @@ describe('docker-compose-js', () => {
         composeFiles,
         build: true,
         environmentVariables,
-        servicesToStart: [testingServiceName]
+        servicesToStart: [testingServiceName],
+        projectName: projectName
       }
       psConfig = {
         cwd,
         composeFiles,
-        environmentVariables
+        environmentVariables,
+        projectName: projectName
       }
       downConfig = {
         cwd,
         composeFiles,
-        environmentVariables
+        environmentVariables,
+        projectName: projectName
       }
       getServiceAddressConfig = {
         composeFiles,
         cwd,
         environmentVariables,
         serviceName: testingServiceName,
-        originalPort: 1234
+        originalPort: 1234,
+        projectName: projectName
       }
       getServiceIdConfig = {
         composeFiles,
         cwd,
         environmentVariables,
-        serviceName: testingServiceName
+        serviceName: testingServiceName,
+        projectName: projectName
       }
     })
 
@@ -84,7 +91,7 @@ describe('docker-compose-js', () => {
       expect(psResult.error).to.be.null;
 
       const stdout = <string>psResult.stdout;
-      const serviceStatusIndex = stdout.indexOf('testresources_testing_service');
+      const serviceStatusIndex = stdout.indexOf(`${projectName}_testing_service`);
       const endServiceStatus = stdout.indexOf('\n', serviceStatusIndex);
       const serticeStatus = stdout.substr(serviceStatusIndex, endServiceStatus - serviceStatusIndex);
 
@@ -114,10 +121,27 @@ describe('docker-compose-js', () => {
         cwd,
         composeFiles,
         environmentVariables,
-        serviceName: testingServiceName
+        serviceName: testingServiceName,
+        projectName: projectName
       })
 
       expect(result).to.be.true;
+    })
+
+    it('should set name correctly', async function () {
+      this.timeout(0);
+
+      const id: string = await getServiceId(getServiceIdConfig);
+
+      const command = `docker ps --filter id=${id} --format "{{.Names}}"`;
+      const result: CommandResult = await executeCommand(command, {});
+
+      expect(result.error).to.be.null;
+      expect(result.error).to.be.null;
+
+      const nameRegExp: RegExp = new RegExp(`^${projectName}_${testingServiceName}_\\d+$`)
+      const stdout = (<string>result.stdout).replace('\n', '').replace('\r', '');
+      expect(nameRegExp.test(stdout), `expected '${stdout}' to match regex ${nameRegExp}`).to.be.true;
     })
 
     describe('dockerComposeDown', () => {
@@ -125,7 +149,7 @@ describe('docker-compose-js', () => {
 
       beforeEach(async function () {
         this.timeout(0);
-        downResult = await dockerComposeDown(upConfig);
+        downResult = await dockerComposeDown(downConfig);
       })
 
       it('should not fail', () => {
@@ -141,9 +165,9 @@ describe('docker-compose-js', () => {
 
         const stdout = <string>psResult.stdout;
 
-        const serviceStatusIndex = stdout.indexOf('testresources_testing_service');
+        const serviceStatusIndex = stdout.indexOf(testingServiceName);
 
-        expect(serviceStatusIndex).to.be.equal(-1);
+        expect(serviceStatusIndex, 'the container was not stopped').to.be.equal(-1);
       })
     })
 
@@ -157,7 +181,8 @@ describe('docker-compose-js', () => {
           composeFiles,
           build: true,
           environmentVariables,
-          servicesToStart: [healthyServiceName]
+          servicesToStart: [healthyServiceName],
+          projectName: projectName
         })
       })
 
@@ -167,7 +192,8 @@ describe('docker-compose-js', () => {
           cwd,
           composeFiles,
           environmentVariables,
-          serviceName: healthyServiceName
+          serviceName: healthyServiceName,
+          projectName: projectName
         })
 
         expect(result).to.be.true;
@@ -184,7 +210,8 @@ describe('docker-compose-js', () => {
           composeFiles,
           build: true,
           environmentVariables,
-          servicesToStart: [unhealthyServiceName]
+          servicesToStart: [unhealthyServiceName],
+          projectName: projectName
         })
       })
 
@@ -194,7 +221,8 @@ describe('docker-compose-js', () => {
           cwd,
           composeFiles,
           environmentVariables,
-          serviceName: unhealthyServiceName
+          serviceName: unhealthyServiceName,
+          projectName: projectName
         })
 
         expect(result).to.be.false;

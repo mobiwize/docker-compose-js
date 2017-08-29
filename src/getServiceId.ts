@@ -1,11 +1,10 @@
 import { ExecOptions } from 'child_process';
 import { executeCommand, CommandResult } from './executeCommand';
+import { DockerComposeConfigBase } from "./dockerComposeConfigBase";
+import { getDockerComposeCommand } from "./getDockerComposeCommand";
 
-export interface GetServiceIdConfig {
+export interface GetServiceIdConfig extends DockerComposeConfigBase {
   serviceName: string;
-  cwd?: string;
-  composeFiles: string[];
-  environmentVariables?: { [key: string]: string };
 }
 
 export async function getServiceId(config: GetServiceIdConfig): Promise<string> {
@@ -14,9 +13,12 @@ export async function getServiceId(config: GetServiceIdConfig): Promise<string> 
     cwd: config.cwd
   };
 
-  const composeFiles: string = config.composeFiles.map(file => `-f ${file}`).join(' ');
-
-  const command = `docker-compose ${composeFiles} ps -q ${config.serviceName}`;
+  const command = getDockerComposeCommand({
+    command: 'ps',
+    commandArgs: ['-q', config.serviceName],
+    composeFiles: config.composeFiles,
+    projectName: config.projectName
+  });
 
   const result: CommandResult = await executeCommand(command, options);
   if (result.error) {

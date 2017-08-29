@@ -1,10 +1,9 @@
 import { ExecOptions } from 'child_process';
 import { executeCommand, CommandResult } from './executeCommand';
+import { DockerComposeConfigBase } from "./dockerComposeConfigBase";
+import { getDockerComposeCommand } from "./getDockerComposeCommand";
 
-export interface DockerComposePSConfig {
-  cwd?: string;
-  composeFiles: string[];
-  environmentVariables?: { [key: string]: string };
+export interface DockerComposePSConfig extends DockerComposeConfigBase {
 }
 
 export function dockerComposePS(config: DockerComposePSConfig): Promise<CommandResult> {
@@ -13,9 +12,11 @@ export function dockerComposePS(config: DockerComposePSConfig): Promise<CommandR
     cwd: config.cwd
   };
     
-  const composeFiles: string = config.composeFiles.map(file => `-f ${file}`).join(' ');
-  
-  const command = `docker-compose ${composeFiles} ps`;
+  const command = getDockerComposeCommand({
+    command: 'ps',
+    composeFiles: config.composeFiles,
+    projectName: config.projectName
+  });
 
   return executeCommand(command, options);
 }

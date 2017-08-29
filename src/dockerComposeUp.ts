@@ -1,12 +1,11 @@
 import { ExecOptions } from 'child_process';
 import { executeCommand, CommandResult } from './executeCommand';
+import { DockerComposeConfigBase } from "./dockerComposeConfigBase";
+import { getDockerComposeCommand } from "./getDockerComposeCommand";
 
-export interface DockerComposeUpConfig {
-  cwd?: string;
+export interface DockerComposeUpConfig extends DockerComposeConfigBase {
   servicesToStart?: string[];
   build?: boolean;
-  composeFiles: string[];
-  environmentVariables?: { [key: string]: string };
 }
 
 export function dockerComposeUp(config: DockerComposeUpConfig): Promise<CommandResult> {
@@ -15,11 +14,15 @@ export function dockerComposeUp(config: DockerComposeUpConfig): Promise<CommandR
     cwd: config.cwd
   };
     
-  const composeFiles: string = config.composeFiles.map(file => `-f ${file}`).join(' ');
   const build = config.build ? '--build' : '';
   const servicesToStart = (config.servicesToStart || []).join(' ');
   
-  const command = `docker-compose ${composeFiles} up -d ${build} ${servicesToStart}`;
+  const command = getDockerComposeCommand({
+    command: 'up',
+    commandArgs: ['-d', build, servicesToStart],
+    composeFiles: config.composeFiles,
+    projectName: config.projectName
+  });
 
   return executeCommand(command, options);
 }

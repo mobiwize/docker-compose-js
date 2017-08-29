@@ -1,14 +1,12 @@
 import { ExecOptions } from 'child_process';
 import { executeCommand, CommandResult } from './executeCommand';
 import { getServiceId } from './getServiceId';
+import { DockerComposeConfigBase } from "./dockerComposeConfigBase";
 
-export interface WaitUntilHealthyConfig {
+export interface WaitUntilHealthyConfig extends DockerComposeConfigBase {
   serviceName: string;
-  composeFiles: string[];
   retries?: number;
   checkIntervalMilliseconds?: number,
-  cwd?: string;
-  environmentVariables?: { [key: string]: string };
 }
 
 export async function waitUntilHealthy(config: WaitUntilHealthyConfig): Promise<boolean> {
@@ -16,7 +14,8 @@ export async function waitUntilHealthy(config: WaitUntilHealthyConfig): Promise<
     composeFiles: config.composeFiles,
     cwd: config.cwd,
     environmentVariables: config.environmentVariables,
-    serviceName: config.serviceName
+    serviceName: config.serviceName,
+    projectName: config.projectName
   });
 
   const options: ExecOptions = {
