@@ -4,6 +4,7 @@ import { DockerComposeConfigBase } from "./dockerComposeConfigBase";
 import { getDockerComposeCommand } from "./getDockerComposeCommand";
 
 export interface DockerComposeDownConfig extends DockerComposeConfigBase {
+  removeImages?: boolean;
 }
 
 export function dockerComposeDown(config: DockerComposeDownConfig): Promise<CommandResult> {
@@ -11,11 +12,17 @@ export function dockerComposeDown(config: DockerComposeDownConfig): Promise<Comm
     env: config.environmentVariables,
     cwd: config.cwd
   };
+
+  const commandArgs = [];
+  if (config.removeImages) {
+    commandArgs.push('--rmi all');
+  }
     
   const command = getDockerComposeCommand({
     command: 'down',
     composeFiles: config.composeFiles,
-    projectName: config.projectName
+    projectName: config.projectName,
+    commandArgs: commandArgs
   });
 
   return executeCommand(command, options);

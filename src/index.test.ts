@@ -76,7 +76,10 @@ describe('docker-compose-js', () => {
 
     afterEach(async function () {
       this.timeout(0);
-      await dockerComposeDown(downConfig);
+      await dockerComposeDown({ 
+        ...downConfig,
+        removeImages: true
+      });
     });
 
     it('should not fail', function () {
@@ -168,6 +171,26 @@ describe('docker-compose-js', () => {
         const serviceStatusIndex = stdout.indexOf(testingServiceName);
 
         expect(serviceStatusIndex, 'the container was not stopped').to.be.equal(-1);
+      })
+
+      describe('dockerComposeRemoveImages', () => {
+        beforeEach(async function () {
+          this.timeout(0);
+          const config: DockerComposeDownConfig = {
+            ...downConfig,
+            removeImages: true
+          }
+          await dockerComposeDown(config);
+        })
+
+        it('should remove the image', async function () {
+          this.timeout(0);
+          const result: CommandResult =
+            await executeCommand(`docker images | grep ${environmentVariables.IMAGE_NAME} || true`, {});
+
+          expect(result.error).to.be.null;
+          expect(result.stdout).to.be.empty;
+        })
       })
     })
 
